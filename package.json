@@ -1,0 +1,25 @@
+{
+  "name": "rapidscoper-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --exec babel-node index.js"
+  },
+  "dependencies": {
+    "rootpath": "^0.1.2",
+    "vue-sockets-server": "git+ssh://git@github.com/Mozzler/mongo-stream-socketio-server.git#refactored"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/node": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "nodemon": "^1.19.1"
+  }
+}
