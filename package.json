@@ -7,11 +7,11 @@
   "license": "ISC",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon --exec babel-node index.js"
+    "serve": "nodemon index.js"
   },
   "dependencies": {
     "rootpath": "^0.1.2",
-    "vue-sockets-server": "git+ssh://git@github.com/Mozzler/mongo-stream-socketio-server.git#refactored"
+    "vue-sockets-server": "git+ssh://git@github.com/Mozzler/mongo-stream-socketio-server.git#real-data-refactored"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
