@@ -7,20 +7,6 @@ function configure (runner) {
     const io = runner.initIO();
     const socketIO = new socket(io);
 
-    /*
-    db.get().collection('team').aggregate([
-        { "$lookup":
-          {
-            from: "userTeam",
-            localField: "_id",
-            foreignField : "teamId",
-            as: "userTeam"
-          }
-        },
-    ]).toArray((err, items) => {
-        console.log(items)
-    });
-*/
     runner.listen();
 }
 

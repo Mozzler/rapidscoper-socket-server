@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "rootpath": "^0.1.2",
+    "uuid": "^3.3.2",
     "vue-sockets-server": "git+ssh://git@github.com/Mozzler/mongo-stream-socketio-server.git#real-data-refactored"
   },
   "devDependencies": {
