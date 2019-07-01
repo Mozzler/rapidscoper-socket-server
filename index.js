@@ -1,12 +1,9 @@
 const config = require('./config/config');
+const constants = require('./config/constants');
 const runner = require('vue-sockets-server/runner')(config);
-const db = require('vue-sockets-server/services/db');
-const socket = require('./services/sockets');
 
 function configure (runner) {
-    const io = runner.initIO();
-    const socketIO = new socket(io);
-
+    runner.initIO(constants);
     runner.listen();
 }
 
