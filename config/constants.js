@@ -15,6 +15,6 @@ module.exports = {
   },
   routes: {
     user: 'user',
-    stream: '_metadata/stream'
+    stream: '_metadata/streams'
   }
 };
