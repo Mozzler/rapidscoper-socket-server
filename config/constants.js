@@ -5,7 +5,8 @@ module.exports = {
     project: 'project',
     userProject: 'userProject',
     userTeam: 'userTeam',
-    section: 'section'
+    section: 'section',
+    story: 'story'
   },
   server_models: {
     'app.user': 'app\\models\\User',
@@ -13,7 +14,8 @@ module.exports = {
     'userProject': 'app\\models\\UserProject',
     'userTeam': 'app\\models\\UserTeam',
     'team': 'app\\models\\Team',
-    'section': 'app\\models\\Section'
+    'section': 'app\\models\\Section',
+    'story': 'app\\models\\Story'
   },
   routes: {
     user: 'user',
