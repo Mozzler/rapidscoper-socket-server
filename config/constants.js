@@ -6,7 +6,8 @@ module.exports = {
     userProject: 'userProject',
     userTeam: 'userTeam',
     section: 'section',
-    story: 'story'
+    story: 'story',
+    token: 'mozzler.auth.access_tokens'
   },
   server_models: {
     'app.user': 'app\\models\\User',
