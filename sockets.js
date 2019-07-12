@@ -92,7 +92,9 @@ class SocketService {
         const collection = this.API.getModelByKey(data.model);
         const mongoCollection = db.get().collection(collection);
 
+        data.filter = this.filterToSnapshot(data.filter);
         data.permission_filter = this.filterToSnapshot(data.permission_filter);
+
         const filters = this.filterToBson(data);
 
         return {
@@ -120,15 +122,19 @@ class SocketService {
         this.addMongoListener(socket, data, streamId);
     }
 
-    filterToSnapshot (permissions) {
-        permissions.$or.forEach((el, index) => {
+    filterToSnapshot (filters) {
+        if (!filters) {
+            return;
+        }
+
+        filters.$or.forEach((el, index) => {
             let [key, value] = [ Object.keys(el)[0], Object.values(el)[0] ];
-            permissions.$or[index] = {
+            filters.$or[index] = {
               [key.replace(/fullDocument|documentKey|\./gi, '')]: value
             };
         });
 
-        return permissions;
+        return filters;
     }
 
     filterToBson(data) {
@@ -141,7 +147,7 @@ class SocketService {
         if (data.filter) {
             filter[0].$match.$and.push(data.filter);
         }
-        if (data.permission_filter) {
+        if (data.permission_filter && data.model !== 'project') {
             filter[0].$match.$and.push(data.permission_filter);
         }
 
