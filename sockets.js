@@ -41,7 +41,7 @@ class SocketService {
                     response.snapshot = await this.getSnapshot(data);
                 }
 
-                this.handleConnection(socket, data, response.streamId);
+                //this.handleConnection(socket, data, response.streamId);
 
                 cb(response);
             });
@@ -147,7 +147,7 @@ class SocketService {
         if (data.filter) {
             filter[0].$match.$and.push(data.filter);
         }
-        if (data.permission_filter && data.model !== 'project') {
+        if (data.permission_filter) {
             filter[0].$match.$and.push(data.permission_filter);
         }
 
