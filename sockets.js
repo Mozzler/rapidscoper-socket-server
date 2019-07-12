@@ -17,7 +17,7 @@ class SocketService {
         this.io.on('connection', (socket) => {
             console.log(`NEW SOCKET ${socket.id}`);
 
-            socket.on('join_collection', async (data, cb) => {
+            socket.on('join_collection', async (data, snapshot, cb) => {
                 let [permissionFilter, userId] = await this.API.getPermissionsFilter(data.token, data.model);
 
                 const response = {
@@ -36,7 +36,11 @@ class SocketService {
                     permission_filter: permissionFilter,
                 });
 
-                response.snapshot = await this.getSnapshot(data);
+
+                if (snapshot) {
+                    response.snapshot = await this.getSnapshot(data);
+                }
+
                 this.handleConnection(socket, data, response.streamId);
 
                 cb(response);
