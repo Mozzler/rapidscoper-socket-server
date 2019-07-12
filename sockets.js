@@ -18,23 +18,25 @@ class SocketService {
             console.log(`NEW SOCKET ${socket.id}`);
 
             socket.on('join_collection', async (data, cb) => {
-                const user = await this.API.checkToken(data.token);
+                let [permissionFilter, userId] = await this.API.getPermissionsFilter(data.token, data.model);
+
                 const response = {
-                    streamId: null,
+                    streamId: uuid(),
                     snapshot: null,
                     error: false
                 };
 
-                if (!user) {
+                if (!permissionFilter) {
                     response.error = true;
                     cb(response);
                 }
 
-                data.userId = user.id;
-                response.streamId = uuid();
-                response.snapshot = await this.getSnapshot(data);
+                Object.assign(data, {
+                    userId: userId,
+                    permission_filter: permissionFilter,
+                });
 
-                data.permission_filter = await this.API.getPermissionsFilter(data.token, data.model);
+                response.snapshot = await this.getSnapshot(data);
                 this.handleConnection(socket, data, response.streamId);
 
                 cb(response);
@@ -84,51 +86,14 @@ class SocketService {
 
     async getSnapshot (data) {
         const collection = this.API.getModelByKey(data.model);
-        let mongoCollection = db.get().collection(collection);
+        const mongoCollection = db.get().collection(collection);
 
-        let filters = {};
+        data.permission_filter = this.filterToSnapshot(data.permission_filter);
+        const filters = this.filterToBson(data);
 
-        if (data.model === 'team') {
-            mongoCollection = db.get().collection('userTeam');
-            filters = [
-                { $match: { 'userId': ObjectID(data.userId) } },
-                {
-                    $lookup: {
-                        from: 'team',
-                        localField: 'teamId',
-                        foreignField: '_id',
-                        as: 'team'
-                    }
-                },
-                {
-                    $project: {
-                        team: {
-                            $arrayElemAt: [ '$team', 0 ]
-                        }
-                    }
-                }
-            ];
-        }
-        if (data.model === 'user') {
-            filters = [{
-                $match: {
-                    $or: [
-                        { '_id': ObjectID(data.userId) }
-                    ]
-                }
-            }];
-        }
-        if (data.model === 'story') {
-            filters = [{
-                $match: {
-                    $or: [
-                        { 'projectId': ObjectID(data.userId) }
-                    ]
-                }
-            }];
-        }
-
-        return await mongoCollection.aggregate(filters).toArray();
+        return {
+            items: await mongoCollection.aggregate(filters).toArray()
+        };
     }
 
     handleConnection(socket, data, streamId) {
@@ -151,22 +116,41 @@ class SocketService {
         this.addMongoListener(socket, data, streamId);
     }
 
-    addMongoListener(socket, data, streamId) {
-        const collection = this.API.getModelByKey(data.model);
-        const mongoCollection = db.get().collection(collection);
-        let filter = [{
+    filterToSnapshot (permissions) {
+        permissions.$or.forEach((el, index) => {
+            let [key, value] = [ Object.keys(el)[0], Object.values(el)[0] ];
+            permissions.$or[index] = {
+              [key.replace(/fullDocument|documentKey|\./gi, '')]: value
+            };
+        });
+
+        return permissions;
+    }
+
+    filterToBson(data) {
+        const filter = [{
             $match: {
                 $and: []
             }
         }];
 
+        if (data.filter) {
+            filter[0].$match.$and.push(data.filter);
+        }
         if (data.permission_filter) {
             filter[0].$match.$and.push(data.permission_filter);
-        } else {
-            filter = [];
         }
 
         this.castFilter(filter);
+
+        return filter;
+    }
+
+    addMongoListener(socket, data, streamId) {
+        const collection = this.API.getModelByKey(data.model);
+        const mongoCollection = db.get().collection(collection);
+        const filter = this.filterToBson(data);
+
         console.log(`NEW STREAM ${streamId}`);
 
         this.user_sockets[data.user_id][socket.id].streams[streamId] = {
@@ -177,7 +161,6 @@ class SocketService {
         this.user_sockets[data.user_id][socket.id].streams[streamId].change_stream = mongoCollection.watch(
             filter, { fullDocument: 'updateLookup' }
         ).on('change', item => {
-            console.log(item);
             const response = {
                 operationType: item.operationType,
                 fullDocument: item.fullDocument,
