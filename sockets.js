@@ -32,7 +32,7 @@ class SocketService {
                 }
 
                 Object.assign(data, {
-                    userId: userId,
+                    user_id: userId,
                     permission_filter: permissionFilter,
                 });
 
@@ -41,7 +41,7 @@ class SocketService {
                     response.snapshot = await this.getSnapshot(data);
                 }
 
-                //this.handleConnection(socket, data, response.streamId);
+                this.handleConnection(socket, data, response.streamId);
 
                 cb(response);
             });
@@ -74,6 +74,48 @@ class SocketService {
                 }
             });
 
+            socket.on('recreate_watcher', async ({model, token}) => {
+                console.log(`RECREATE WATCHER ${model} ${token}`);
+
+                const [permissions, userId] = await this.API.getPermissionsFilter(token, model);
+                const userSockets = this.user_sockets[userId];
+
+                const collection = this.API.getModelByKey(model);
+                const mongoCollection = db.get().collection(collection);
+
+                if (userSockets) {
+                    Object.keys(userSockets).forEach(async (socketId) => {
+                        const streamList = userSockets[socketId].streams;
+                        const streamId = Object.keys(streamList).find(streamId => streamList[streamId].model === model);
+
+                        streamList[streamId].change_stream.close();
+
+                        const filter = this.filterToBson({
+                            filter: this.filterToSnapshot(streamList[streamId].filter),
+                            permission_filter: this.filterToSnapshot(permissions)
+                        });
+
+                        streamList[streamId].change_stream = mongoCollection.watch(
+                            filter, { fullDocument: 'updateLookup' }
+                        ).on('change', item => {
+                            const response = {
+                                operationType: item.operationType,
+                                fullDocument: item.fullDocument,
+                                model: model
+                            };
+
+                            socket.emit('mongo_data', response);
+                        });
+
+                        const data = await this.getSnapshot({
+                            model: model
+                        }, filter);
+
+                        userSockets[socketId].socket_obj.emit('update_dataset', { list: data, model: model });
+                    });
+                }
+            });
+
             socket.on('token_refreshed_recreate', async ({user_id, token}) => {
                 console.log('TOKEN WAS EXPIRED, TRYING TO REFRESH!');
                 this.user_sockets[user_id][socket.id].token = token;
@@ -88,14 +130,17 @@ class SocketService {
         this.subscribeToUserRoles();
     }
 
-    async getSnapshot (data) {
+    async getSnapshot (data, handledFilters = null) {
         const collection = this.API.getModelByKey(data.model);
         const mongoCollection = db.get().collection(collection);
+        let filters = handledFilters;
 
-        data.filter = this.filterToSnapshot(data.filter);
-        data.permission_filter = this.filterToSnapshot(data.permission_filter);
+        if (filters === null) {
+            data.filter = this.filterToSnapshot(data.filter);
+            data.permission_filter = this.filterToSnapshot(data.permission_filter);
 
-        const filters = this.filterToBson(data);
+            filters = this.filterToBson(data);
+        }
 
         return {
             items: await mongoCollection.aggregate(filters).toArray()
