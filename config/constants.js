@@ -7,7 +7,7 @@ module.exports = {
     userTeam: 'userTeam',
     section: 'section',
     story: 'story',
-    token: 'mozzler.auth.access_tokens'
+    dictionary: 'dictionary'
   },
   server_models: {
     'app.user': 'app\\models\\User',
@@ -16,7 +16,8 @@ module.exports = {
     'userTeam': 'app\\models\\UserTeam',
     'team': 'app\\models\\Team',
     'section': 'app\\models\\Section',
-    'story': 'app\\models\\Story'
+    'story': 'app\\models\\Story',
+    'dictionary': 'app\\models\\Dictionary',
   },
   routes: {
     user: 'user',

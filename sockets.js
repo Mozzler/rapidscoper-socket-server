@@ -87,7 +87,7 @@ class SocketService {
                     Object.keys(userSockets).forEach(async (socketId) => {
                         const streamList = userSockets[socketId].streams;
                         const streamId = Object.keys(streamList).find(streamId => streamList[streamId].model === model);
-
+                        
                         streamList[streamId].change_stream.close();
 
                         const filter = this.filterToBson({
