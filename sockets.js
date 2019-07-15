@@ -74,7 +74,7 @@ class SocketService {
                 }
             });
 
-            socket.on('recreate_watcher', async ({model, token}) => {
+            socket.on('recreate_watcher', async ({model, token, initialStreamId}) => {
                 console.log(`RECREATE WATCHER ${model} ${token}`);
 
                 const [permissions, userId] = await this.API.getPermissionsFilter(token, model);
@@ -111,7 +111,9 @@ class SocketService {
                             model: model
                         }, filter);
 
-                        userSockets[socketId].socket_obj.emit('update_dataset', { list: data, model: model });
+                        if (initialStreamId !== streamId) {
+                            userSockets[socketId].socket_obj.emit('update_dataset', { list: data, model: model });
+                        }
                     });
                 }
             });
@@ -197,14 +199,16 @@ class SocketService {
         }
 
         this.castFilter(filter);
-
+        if (data.model === 'section') {
+            console.log(JSON.stringify(filter, null, 4));
+        }
         return filter;
     }
 
     addMongoListener(socket, data, streamId) {
         const collection = this.API.getModelByKey(data.model);
         const mongoCollection = db.get().collection(collection);
-        const filter = this.filterToBson(data);
+        let filter = this.filterToBson(data);
 
         console.log(`NEW STREAM ${streamId}`);
 
@@ -214,7 +218,7 @@ class SocketService {
         };
 
         this.user_sockets[data.user_id][socket.id].streams[streamId].change_stream = mongoCollection.watch(
-            filter, { fullDocument: 'updateLookup' }
+            [], { fullDocument: 'updateLookup' }
         ).on('change', item => {
             const response = {
                 operationType: item.operationType,
