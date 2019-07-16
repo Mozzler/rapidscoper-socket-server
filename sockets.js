@@ -91,8 +91,8 @@ class SocketService {
                         streamList[streamId].change_stream.close();
 
                         const filter = this.filterToBson({
-                            filter: this.filterToSnapshot(streamList[streamId].filter),
-                            permission_filter: this.filterToSnapshot(permissions)
+                            filter: streamList[streamId].filter,
+                            permission_filter: permissions
                         });
 
                         streamList[streamId].change_stream = mongoCollection.watch(
@@ -108,8 +108,10 @@ class SocketService {
                         });
 
                         const data = await this.getSnapshot({
-                            model: model
-                        }, filter);
+                            model: model,
+                            filter: streamList[streamId].filter,
+                            permission_filter: permissions
+                        });
 
                         if (initialStreamId !== streamId) {
                             userSockets[socketId].socket_obj.emit('update_dataset', { list: data, model: model });
@@ -132,17 +134,14 @@ class SocketService {
         this.subscribeToUserRoles();
     }
 
-    async getSnapshot (data, handledFilters = null) {
+    async getSnapshot (data) {
         const collection = this.API.getModelByKey(data.model);
         const mongoCollection = db.get().collection(collection);
-        let filters = handledFilters;
 
-        if (filters === null) {
-            data.filter = this.filterToSnapshot(data.filter);
-            data.permission_filter = this.filterToSnapshot(data.permission_filter);
-
-            filters = this.filterToBson(data);
-        }
+        let filters = this.filterToBson({
+            filter: this.filterToSnapshot(data.filter),
+            permission_filter: this.filterToSnapshot(data.permission_filter)
+        });
 
         return {
             items: await mongoCollection.aggregate(filters).toArray()
@@ -170,18 +169,22 @@ class SocketService {
     }
 
     filterToSnapshot (filters) {
+        const data = {
+            $or: []
+        };
+
         if (!filters) {
             return;
         }
 
         filters.$or.forEach((el, index) => {
             let [key, value] = [ Object.keys(el)[0], Object.values(el)[0] ];
-            filters.$or[index] = {
-              [key.replace(/fullDocument|documentKey|\./gi, '')]: value
-            };
+            data.$or.push({
+                [key.replace(/fullDocument|documentKey|\./gi, '')]: value
+            });
         });
 
-        return filters;
+        return data;
     }
 
     filterToBson(data) {
@@ -199,9 +202,6 @@ class SocketService {
         }
 
         this.castFilter(filter);
-        if (data.model === 'section') {
-            console.log(JSON.stringify(filter, null, 4));
-        }
         return filter;
     }
 
@@ -218,7 +218,7 @@ class SocketService {
         };
 
         this.user_sockets[data.user_id][socket.id].streams[streamId].change_stream = mongoCollection.watch(
-            [], { fullDocument: 'updateLookup' }
+            filter, { fullDocument: 'updateLookup' }
         ).on('change', item => {
             const response = {
                 operationType: item.operationType,
