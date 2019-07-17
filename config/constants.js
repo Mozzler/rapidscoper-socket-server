@@ -1,13 +1,14 @@
 module.exports = {
   models: {
-    user: 'app.user',
     team: 'team',
     project: 'project',
     userProject: 'userProject',
     userTeam: 'userTeam',
     section: 'section',
     story: 'story',
-    dictionary: 'dictionary'
+    dictionary: 'dictionary',
+    user: 'userInfo',
+    userInfo: 'userInfo'
   },
   server_models: {
     'app.user': 'app\\models\\User',
@@ -18,6 +19,7 @@ module.exports = {
     'section': 'app\\models\\Section',
     'story': 'app\\models\\Story',
     'dictionary': 'app\\models\\Dictionary',
+    'userInfo': 'app\\models\\UserInfo'
   },
   routes: {
     user: 'user',

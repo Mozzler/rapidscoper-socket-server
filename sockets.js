@@ -77,6 +77,10 @@ class SocketService {
             socket.on('recreate_watcher', async ({model, token, initialStreamId}) => {
                 console.log(`RECREATE WATCHER ${model} ${token}`);
 
+                if (model === 'user') {
+                    model = 'userInfo';
+                }
+
                 const [permissions, userId] = await this.API.getPermissionsFilter(token, model);
                 const userSockets = this.user_sockets[userId];
 
