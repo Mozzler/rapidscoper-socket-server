@@ -8,7 +8,8 @@ module.exports = {
     story: 'story',
     dictionary: 'dictionary',
     user: 'userInfo',
-    userInfo: 'userInfo'
+    userInfo: 'userInfo',
+    owner: 'app.user'
   },
   server_models: {
     'app.user': 'app\\models\\User',

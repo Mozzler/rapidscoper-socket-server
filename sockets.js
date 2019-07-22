@@ -18,7 +18,7 @@ class SocketService {
             console.log(`NEW SOCKET ${socket.id}`);
 
             socket.on('join_collection', async (data, snapshot, cb) => {
-                let [permissionFilter, userId] = await this.API.getPermissionsFilter(data.token, data.model);
+                let [permissions, userId] = await this.API.getPermissionsFilter(data.token, data.model);
 
                 const response = {
                     streamId: uuid(),
@@ -26,14 +26,14 @@ class SocketService {
                     error: false
                 };
 
-                if (!permissionFilter) {
-                    response.error = true;
+                if (!userId) {
+                    response.error = _.pick(permissions.response, 'status', 'statusText');
                     cb(response);
                 }
 
                 Object.assign(data, {
                     user_id: userId,
-                    permission_filter: permissionFilter,
+                    permission_filter: permissions,
                 });
 
 
@@ -152,6 +152,10 @@ class SocketService {
             filter: this.filterToSnapshot(data.filter),
             permission_filter: this.filterToSnapshot(data.permission_filter),
         })];
+
+        if (data.model === 'story') {
+            console.log(JSON.stringify(filters, null, 4));
+        }
 
         let items = await mongoCollection.aggregate(filters).toArray();
 
