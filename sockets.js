@@ -74,7 +74,7 @@ class SocketService {
                 }
             });
 
-            socket.on('recreate_watcher', async ({model, token, initialStreamId}) => {
+            socket.on('recreate_watcher', async ({model, token, initialStreamId, globally}) => {
                 console.log(`RECREATE WATCHER ${model} ${token}`);
 
                 if (model === 'user') {
@@ -117,7 +117,7 @@ class SocketService {
                             permission_filter: permissions
                         });
 
-                        if (initialStreamId !== streamId) {
+                        if (initialStreamId !== streamId || globally) {
                             userSockets[socketId].socket_obj.emit('update_dataset', { list: data, model: model });
                         }
                     });
@@ -152,10 +152,6 @@ class SocketService {
             filter: this.filterToSnapshot(data.filter),
             permission_filter: this.filterToSnapshot(data.permission_filter),
         })];
-
-        if (data.model === 'story') {
-            console.log(JSON.stringify(filters, null, 4));
-        }
 
         let items = await mongoCollection.aggregate(filters).toArray();
 
