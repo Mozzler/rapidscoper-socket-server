@@ -20,6 +20,8 @@ class SocketService {
             socket.on('join_collection', async (data, snapshot, cb) => {
                 let [permissions, userId] = await this.API.getPermissionsFilter(data.token, data.model);
 
+                console.log(permissions, 'USERID', userId);
+
                 const response = {
                     streamId: uuid(),
                     snapshot: null,
