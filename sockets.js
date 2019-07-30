@@ -20,8 +20,6 @@ class SocketService {
             socket.on('join_collection', async (data, snapshot, cb) => {
                 let [permissions, userId] = await this.API.getPermissionsFilter(data.token, data.model);
 
-                console.log(permissions, 'USERID', userId);
-
                 const response = {
                     streamId: uuid(),
                     snapshot: null,
@@ -191,10 +189,14 @@ class SocketService {
             return;
         }
 
+
         filters.$or.forEach((el, index) => {
-            let [key, value] = [ Object.keys(el)[0], Object.values(el)[0] ];
-            data.$or.push({
-                [key.replace(/fullDocument|documentKey|\./gi, '')]: value
+            let [keys, values] = [ Object.keys(el), Object.values(el) ];
+            data.$or.push({});
+
+            keys.forEach((key, index) => {
+                let replaced = key.replace(/fullDocument|documentKey|\./gi, '');
+                data.$or[data.$or.length - 1][replaced] = values[index];
             });
         });
 
