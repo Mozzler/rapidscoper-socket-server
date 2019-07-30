@@ -74,7 +74,7 @@ class SocketService {
                 }
             });
 
-            socket.on('recreate_watcher', async ({model, token, initialStreamId, globally}) => {
+            socket.on('recreate_watcher', async ({model, token, initialStreamId, frontendFilter, globally}) => {
                 console.log(`RECREATE WATCHER ${model} ${token}`);
 
                 if (model === 'user') {
@@ -93,6 +93,10 @@ class SocketService {
                         const streamId = Object.keys(streamList).find(streamId => streamList[streamId].model === model);
                         
                         streamList[streamId].change_stream.close();
+
+                        if (frontendFilter !== null) {
+                            streamList[streamId].filter = frontendFilter;
+                        }
 
                         const filter = this.filterToBson({
                             filter: streamList[streamId].filter,
