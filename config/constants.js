@@ -9,7 +9,8 @@ module.exports = {
     dictionary: 'dictionary',
     user: 'userInfo',
     userInfo: 'userInfo',
-    owner: 'app.user'
+    owner: 'app.user',
+    projectShare: 'projectShare'
   },
   server_models: {
     'app.user': 'app\\models\\User',
@@ -20,7 +21,8 @@ module.exports = {
     'section': 'app\\models\\Section',
     'story': 'app\\models\\Story',
     'dictionary': 'app\\models\\Dictionary',
-    'userInfo': 'app\\models\\UserInfo'
+    'userInfo': 'app\\models\\UserInfo',
+    'projectShare': 'app\\models\\ProjectShare',
   },
   routes: {
     user: 'user',
