@@ -193,7 +193,6 @@ class SocketService {
             return;
         }
 
-
         filters.$or.forEach((el, index) => {
             let [keys, values] = [ Object.keys(el), Object.values(el) ];
             data.$or.push({});
