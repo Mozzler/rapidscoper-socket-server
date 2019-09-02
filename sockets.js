@@ -77,10 +77,6 @@ class SocketService {
             socket.on('recreate_watcher', async ({model, token, initialStreamId, frontendFilter, globally}) => {
                 console.log(`RECREATE WATCHER ${model} ${token}`);
 
-                if (model === 'user') {
-                    model = 'userInfo';
-                }
-
                 const [permissions, userId] = await this.API.getPermissionsFilter(token, model);
                 const userSockets = this.user_sockets[userId];
 
@@ -158,7 +154,6 @@ class SocketService {
         })];
 
         let items = await mongoCollection.aggregate(filters).toArray();
-
         return {
             items: items
         };
