@@ -141,9 +141,17 @@ class SocketService {
     async getSnapshot (data) {
         const collection = this.API.getModelByKey(data.model);
         const mongoCollection = db.get().collection(collection);
-        let filters = this.filterToBson({
-            permission_filter: this.filterToSnapshot(data.permission_filter),
-        });
+        let filters = [];
+
+        if(data.filter && data.filter.params) {
+            filters = [...filters, ...data.filter.params];
+            delete data.filter.params;
+        }
+
+        filters = [...filters, ...this.filterToBson({
+            filter: this.filterToSnapshot(data.filter),
+            permission_filter: this.filterToSnapshot(data.permission_filter)
+        })];
 
         let items = await mongoCollection.aggregate(filters).toArray();
         return {
