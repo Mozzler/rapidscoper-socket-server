@@ -7,7 +7,7 @@ module.exports = {
     section: 'section',
     story: 'story',
     dictionary: 'dictionary',
-    user: 'userInfo',
+    user: 'app.user',
     userInfo: 'userInfo',
     owner: 'app.user',
     projectShare: 'projectShare'
