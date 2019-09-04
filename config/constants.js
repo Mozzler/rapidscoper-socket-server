@@ -10,7 +10,8 @@ module.exports = {
     user: 'app.user',
     userInfo: 'userInfo',
     owner: 'app.user',
-    projectShare: 'projectShare'
+    projectShare: 'projectShare',
+    comment: 'comment'
   },
   server_models: {
     'app.user': 'app\\models\\User',
@@ -23,6 +24,7 @@ module.exports = {
     'dictionary': 'app\\models\\Dictionary',
     'userInfo': 'app\\models\\UserInfo',
     'projectShare': 'app\\models\\ProjectShare',
+    'comment': 'app\\models\\Comment'
   },
   routes: {
     user: 'user',
