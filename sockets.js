@@ -77,10 +77,6 @@ class SocketService {
             socket.on('recreate_watcher', async ({model, token, initialStreamId, frontendFilter, globally}) => {
                 console.log(`RECREATE WATCHER ${model} ${token}`);
 
-                if (model === 'user') {
-                    model = 'userInfo';
-                }
-
                 const [permissions, userId] = await this.API.getPermissionsFilter(token, model);
                 const userSockets = this.user_sockets[userId];
 
@@ -154,11 +150,10 @@ class SocketService {
 
         filters = [...filters, ...this.filterToBson({
             filter: this.filterToSnapshot(data.filter),
-            permission_filter: this.filterToSnapshot(data.permission_filter),
+            permission_filter: this.filterToSnapshot(data.permission_filter)
         })];
 
         let items = await mongoCollection.aggregate(filters).toArray();
-
         return {
             items: items
         };
@@ -185,25 +180,35 @@ class SocketService {
     }
 
     filterToSnapshot (filters) {
-        const data = {
-            $or: []
+        const data = {};
+
+        const replacement = (f, d) => {
+            _.each(f, (item, key) => {
+                let replaced = key;
+
+                if (_.isString(key)) {
+                    replaced = key.replace(/fullDocument|documentKey|\./gi, '');
+                }
+                if (_.isObject(item) && !_.isArray(item)) {
+                    d[replaced] = {};
+                    return replacement(item, d[replaced]);
+                }
+                if (_.isArray(item)) {
+                    d[replaced] = [];
+                    return replacement(item, d[replaced]);
+                }
+                if (_.isString(item)) {
+                    if (_.isArray(d)) {
+                        d.push(item);
+                    }
+                    if (_.isObject(d) && !_.isArray(d)) {
+                        d[replaced] = item;
+                    }
+                }
+            });
         };
 
-        if (!filters) {
-            return;
-        }
-
-
-        filters.$or.forEach((el, index) => {
-            let [keys, values] = [ Object.keys(el), Object.values(el) ];
-            data.$or.push({});
-
-            keys.forEach((key, index) => {
-                let replaced = key.replace(/fullDocument|documentKey|\./gi, '');
-                data.$or[data.$or.length - 1][replaced] = values[index];
-            });
-        });
-
+        replacement(filters, data);
         return data;
     }
 

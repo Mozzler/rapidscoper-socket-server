@@ -10,6 +10,7 @@
     "serve": "nodemon index.js"
   },
   "dependencies": {
+    "lodash": "^4.17.15",
     "rootpath": "^0.1.2",
     "uuid": "^3.3.2",
     "vue-sockets-server": "https://github.com/Mozzler/mongo-stream-socketio-server.git#real-data-refactored"
