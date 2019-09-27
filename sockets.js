@@ -95,8 +95,8 @@ class SocketService {
                         }
 
                         const filter = this.filterToBson({
-                            filter: streamList[streamId].filter,
-                            permission_filter: permissions
+                            filter: this.filterToSnapshot(streamList[streamId].filter),
+                            permission_filter: this.filterToSnapshot(permissions)
                         });
 
                         streamList[streamId].change_stream = mongoCollection.watch(
