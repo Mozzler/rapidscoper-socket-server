@@ -141,6 +141,7 @@ class SocketService {
     async getSnapshot (data) {
         const collection = this.API.getModelByKey(data.model);
         const mongoCollection = db.get().collection(collection);
+
         let filters = [];
 
         if(data.filter && data.filter.params) {
@@ -153,16 +154,10 @@ class SocketService {
             permission_filter: this.filterToSnapshot(data.permission_filter)
         })];
 
-        let response = {
-            items: []
-        };
-
-        if (!data.permission_filter) {
-            return response;
+        const items = await mongoCollection.aggregate(filters).toArray();
+        return {
+            items: items
         }
-
-        response.items = await mongoCollection.aggregate(filters).toArray();
-        return response;
     }
 
     handleConnection(socket, data, streamId) {
@@ -272,7 +267,7 @@ class SocketService {
                     obj[key] = ObjectID(obj[key]);
                 }
 
-                if (typeof obj[key] === 'object' && !(obj[key] instanceof ObjectID)) {
+                if (typeof obj[key] === 'object' && !(obj[key] instanceof ObjectID) && !key.includes('Ids')) {
                     iterate(obj[key])
                 }
             });
